@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../Includes/minishell.h"
+#include "minishell.h"
 
 ////    ATTENTION : c'est du pseudo-code ! A modifier !    ////
 
@@ -32,7 +32,8 @@ int	ft_echo(char *s) // A lancer quand la commande est echo !
 	return (0);
 }
 
-void	ft_cd(char *dirname, t_pip *p)
+//void	ft_cd(char *dirname, t_pip *p)
+void	ft_cd(t_adm *adm, t_elm *elm)
 {
 	char	*pathname;
 	char	*buf;
@@ -41,7 +42,7 @@ void	ft_cd(char *dirname, t_pip *p)
 	pathname = NULL;
 	buf = NULL;
 	size = 256;
-	if (chdir(dirname) != 0)
+	if (chdir(elm->str) != 0)
 	{
 		perror("cd");
 		return ;
@@ -52,8 +53,8 @@ void	ft_cd(char *dirname, t_pip *p)
 		perror("pwd");
 		return ;
 	}
-	ft_unset("PWD", p);
-	ft_export(ft_strjoin("PWD=", pathname), p);
+	ft_unset("PWD", adm);
+	ft_export(ft_strjoin_lib("PWD=", pathname), adm);
 	return ;
 }
 
@@ -76,42 +77,42 @@ void	ft_pwd(void)
 	}
 }
 
-void	ft_export(char *s, t_pip *p)
+void	ft_export(char *s, t_adm *adm)
 {
 	char	*tab_ev;
 	int		s_ev;
 
 	s_ev = 0;
-	while (p->ev[s_ev])
+	while (adm->ev[s_ev])
 		s_ev++;
-	tab_ev = ft_strjoin_n(s_ev, p->ev);
-	free(p->ev);
-	tab_ev = ft_strjoin(tab_ev, "\n");
-	tab_ev = ft_strjoin(tab_ev, s);
-	p->ev = ft_split(tab_ev, '\n');
+	tab_ev = ft_strjoin_n(s_ev, adm->ev);
+	free(adm->ev);
+	tab_ev = ft_strjoin_lib(tab_ev, "\n");
+	tab_ev = ft_strjoin_lib(tab_ev, s);
+	adm->ev = ft_split_lib(tab_ev, '\n');
 	free(tab_ev);
 }
 
-void	ft_unset(char *s, t_pip *p)
+void	ft_unset(char *s, t_adm *adm)
 {
 	int	i;
 
 	i = 0;
-	while (p->ev[i])
+	while (adm->ev[i])
 	{
-printf(YELLOW"ev[%d] = [%s]"RESET"\n", i, p->ev[i]);
-		if (strncmp(s, p->ev[i], ft_strlen(s)) == 0)
-			p->ev[i] = NULL;
-printf(PURPLE"ev[%d] = [%s]"RESET"\n", i, p->ev[i]);
+printf(YELLOW"ev[%d] = [%s]"RESET"\n", i, adm->ev[i]);
+		if (strncmp(s, adm->ev[i], ft_strlen(s)) == 0)
+			adm->ev[i] = NULL;
+printf(PURPLE"ev[%d] = [%s]"RESET"\n", i, adm->ev[i]);
 		i++;
 	}
 }
 
-void	ft_env(t_pip *p)
+void	ft_env(t_adm *adm)
 {
 	int	i;
 
 	i = -1;
-	while (p->ev[++i])
-		ft_putstr_fd(p->ev[i], 1);
+	while (adm->ev[++i])
+		ft_putstr_fd(adm->ev[i], 1);
 }

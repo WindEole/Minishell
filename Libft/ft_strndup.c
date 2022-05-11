@@ -1,28 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strncmp.c                                       :+:      :+:    :+:   */
+/*   ft_strndup.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ebarguil <ebarguil@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/03/16 15:23:33 by ebarguil          #+#    #+#             */
-/*   Updated: 2022/03/16 16:44:24 by ebarguil         ###   ########.fr       */
+/*   Created: 2022/03/16 11:48:35 by ebarguil          #+#    #+#             */
+/*   Updated: 2022/03/16 11:52:59 by ebarguil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-int	ft_strncmp(char *s1, char *s2, int n)
+char	*ft_strndup(char *src, int n)
 {
-	int	i;
+	int		i;
+	int		x;
+	char	*dest;
 
-	i = 0;
-	if ((s1[0] == '\0' && s2[0] != '\0') || (s1[0] != '\0' && s2[0] == '\0'))
-		return (1);
-	while ((s1[i] != '\0' || s2[i] != '\0') && i < n
-		&& (unsigned char)s1[i] == (unsigned char)s2[i])
-		i++;
-	if (i == n)
-		return (0);
-	return ((unsigned char)s1[i] - (unsigned char)s2[i]);
+	if (ft_strlen(src) < n)
+		x = ft_strlen(src);
+	else
+		x = n;
+	dest = malloc(sizeof(char) * x + 1);
+	if (dest == NULL)
+		return (NULL);
+	i = -1;
+	while (src[++i] && i < n)
+		dest[i] = src[i];
+	dest[i] = '\0';
+	return (dest);
 }

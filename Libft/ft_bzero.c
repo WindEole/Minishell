@@ -1,28 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strcmp.c                                        :+:      :+:    :+:   */
+/*   ft_bzero.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ebarguil <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/02/24 15:51:27 by ebarguil          #+#    #+#             */
-/*   Updated: 2022/02/24 16:44:49 by ebarguil         ###   ########.fr       */
+/*   Created: 2022/02/24 17:01:49 by ebarguil          #+#    #+#             */
+/*   Updated: 2022/02/24 17:04:00 by ebarguil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-int	ft_strcmp(char *s1, char *s2)
+void	ft_bzero(char *str, int x)
 {
 	int	i;
 
-	i = 0;
-	if (!s1 && !s2)
-		return (0);
-	else if (!s1 || !s2)
-		return (1);
-	else if (s1 && s2)
-		while (s1[i] == s2[i] && (s1[i] != '\0' || s2[i] != '\0'))
-			i++;
-	return (s1[i] - s2[i]);
+	i = -1;
+	while (++i < x)
+		str[i] = '\0';
 }

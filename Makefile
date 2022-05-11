@@ -3,67 +3,71 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: iderighe <marvin@42.fr>                    +#+  +:+       +#+         #
+#    By: ebarguil <ebarguil@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2021/12/13 10:30:01 by iderighe          #+#    #+#              #
-#    Updated: 2022/02/24 12:15:07 by iderighe         ###   ########.fr        #
+#    Created: 2022/02/22 15:23:29 by ebarguil          #+#    #+#              #
+#    Updated: 2022/03/15 14:15:44 by ebarguil         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME	=	minishell
+NAME		=	minishell
 
-#PATH_O	=	Objects/
-INC		=	Includes/minishell.h
+INC			=	includes/minishell.h
 
-CC		=	clang
-CFLAGS	=	-Wall -Wextra -Werror -I Includes
-CFA		=	-fsanitize=address -g3
-RM		=	/usr/bin/rm -rf
+CC			=	clang
+CFLAGS		=	-Wall -Wextra -Werror -I includes
+CFA			=	-fsanitize=address -g3
+RM			=	/usr/bin/rm -rf
 
-LIB		=	-L./Libft -lft -L./local/lib -lreadline -lcurses
+LIB			=	-L./Libft -lft -L./local/lib -lreadline
 
-vpath %.c Srcs #va chercher les fichiers .c dans ts les dossiers repertories
+vpath %.c srcs #va chercher les fichiers .c dans ts les dossiers repertories
 
-SRC		=	Srcs/main_bis.c \
-			Srcs/builtin.c \
-			#Srcs/main.c \
+SRC			=	srcs/main.c \
+				srcs/parse.c \
+				srcs/list.c \
+				srcs/jobs.c \
+				srcs/redir.c \
+				srcs/define.c \
+				srcs/expand.c \
+				srcs/prog.c \
+				srcs/builtin.c \
+				srcs/utils.c \
+				srcs/free.c \
 
-OBJ		=	$(SRC:Srcs/%.c=Objects/%.o)
+OBJ			=	$(SRC:srcs/%.c=objects/%.o)
 
-#OBJS	=	$(addprefix $(PATH_O), $(OBJ))
+all			:	$(NAME)
 
+$(NAME)		:	libft obj $(OBJ)
+				$(CC) $(CFLAGS) -o $(NAME) $(SRC) $(LIB)
 
-all		:	$(NAME)
+libft		:
+				$(MAKE) -C Libft
 
-$(NAME)	:	libft obj $(OBJ)
-			$(CC) $(CFLAGS) -o $(NAME) $(SRC) $(LIB)
+obj			:
+				mkdir -p objects
 
-libft	:
-			$(MAKE) -C Libft
+objects/%.o	:	%.c $(INC)
+				$(CC) -o $@ -c $< $(CFLAGS)
 
-obj		:	
-			mkdir -p Objects
+n			:
+				norminette $(SRC)
+				norminette $(INC)
+				$(MAKE) -C Libft n
 
-Objects/%.o		:	%.c $(INC)
-			$(CC) -o $@ -c $< $(CFLAGS)
+clean		:
+				$(RM) $(OBJ)
+				$(RM) objects
+				$(MAKE) -C Libft clean
 
-norm	:
-			norminette $(SRC)
-			norminette $(INC)
-			$(MAKE) -C Libft norm
+fclean		:	clean
+				$(RM) $(NAME)
+				$(MAKE) -C Libft fclean
 
-clean	:
-			$(RM) $(OBJ)
-			$(RM) Objects
-			$(MAKE) -C Libft clean
+fsa			:	fclean libft obj $(OBJ)
+				$(CC) $(CFLAGS) $(CFA) -o $(NAME) $(SRC) $(LIB)
 
-fclean	:	clean
-			$(RM) $(NAME)
-			$(MAKE) -C Libft fclean
+re			:	fclean all
 
-fsa		:	libft obj $(OBJ)
-			$(CC) $(CFLAGS) $(CFA) -o $(NAME) $(SRC) $(LIB)
-
-re		:	fclean all
-
-.PHONY	:	all libft norm clean fclean fsa re
+.PHONY		:	all libft n clean fclean fsa re

@@ -1,28 +1,37 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strncmp.c                                       :+:      :+:    :+:   */
+/*   ft_strdup_cut.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ebarguil <ebarguil@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/03/16 15:23:33 by ebarguil          #+#    #+#             */
-/*   Updated: 2022/03/16 16:44:24 by ebarguil         ###   ########.fr       */
+/*   Created: 2022/03/03 15:02:59 by ebarguil          #+#    #+#             */
+/*   Updated: 2022/03/03 15:28:09 by ebarguil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-int	ft_strncmp(char *s1, char *s2, int n)
+char	*ft_strdup_cut(char *str, char c)
 {
-	int	i;
+	char	*s;
+	int		i;
+	int		j;
+	int		n;
 
-	i = 0;
-	if ((s1[0] == '\0' && s2[0] != '\0') || (s1[0] != '\0' && s2[0] == '\0'))
-		return (1);
-	while ((s1[i] != '\0' || s2[i] != '\0') && i < n
-		&& (unsigned char)s1[i] == (unsigned char)s2[i])
-		i++;
-	if (i == n)
-		return (0);
-	return ((unsigned char)s1[i] - (unsigned char)s2[i]);
+	i = -1;
+	n = 0;
+	while (str && str[++i])
+		if (str[i] == c)
+			n++;
+	s = malloc(sizeof(char) * ((ft_strlen(str) - n) + 1));
+	if (s == NULL)
+		return (NULL);
+	i = -1;
+	j = -1;
+	while (str && str[++i])
+		if (str[i] != c)
+			s[++j] = str[i];
+	s[++j] = '\0';
+	return (s);
 }

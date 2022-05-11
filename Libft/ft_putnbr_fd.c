@@ -1,28 +1,32 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strcmp.c                                        :+:      :+:    :+:   */
+/*   ft_putnbr_fd.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ebarguil <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/02/24 15:51:27 by ebarguil          #+#    #+#             */
-/*   Updated: 2022/02/24 16:44:49 by ebarguil         ###   ########.fr       */
+/*   Created: 2021/01/08 15:44:01 by ebarguil          #+#    #+#             */
+/*   Updated: 2021/01/08 15:49:22 by ebarguil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-int	ft_strcmp(char *s1, char *s2)
+void	ft_putnbr_fd(int n, int fd)
 {
-	int	i;
+	long	nb;
 
-	i = 0;
-	if (!s1 && !s2)
-		return (0);
-	else if (!s1 || !s2)
-		return (1);
-	else if (s1 && s2)
-		while (s1[i] == s2[i] && (s1[i] != '\0' || s2[i] != '\0'))
-			i++;
-	return (s1[i] - s2[i]);
+	nb = n;
+	if (nb < 0)
+	{
+		nb = nb * (-1);
+		ft_putchar_fd('-', fd);
+	}
+	if (nb >= 0 && nb <= 9)
+		ft_putchar_fd(nb + '0', fd);
+	if (nb > 9)
+	{
+		ft_putnbr_fd(nb / 10, fd);
+		ft_putnbr_fd(nb % 10, fd);
+	}
 }

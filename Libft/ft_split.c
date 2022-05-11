@@ -3,96 +3,108 @@
 /*                                                        :::      ::::::::   */
 /*   ft_split.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: iderighe <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: ebarguil <ebarguil@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/01/06 15:23:21 by iderighe          #+#    #+#             */
-/*   Updated: 2021/12/14 16:21:14 by iderighe         ###   ########.fr       */
+/*   Created: 2020/09/26 15:13:51 by ebarguil          #+#    #+#             */
+/*   Updated: 2022/03/09 16:28:57 by ebarguil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-static size_t	ft_getrows(char const *s, char c)
+void	*ft_free_split(char **strs)
 {
-	size_t	rows;
-	size_t	i;
+	int	i;
 
-	rows = 0;
-	i = 0;
-	while (s[i] != '\0')
+	i = -1;
+	if (strs)
 	{
-		if (s[i] != c && (s[i + 1] == c || s[i + 1] == '\0'))
-			rows++;
-		i++;
+		while (strs[++i])
+			free(strs[i]);
+		free(strs);
 	}
-	return (rows);
+	return (NULL);
 }
 
-static size_t	ft_wordlen(char const *s2, char c, size_t i)
+static int	ft_is_from_charset(char c, char *charset)
 {
-	size_t	len;
-
-	len = 0;
-	while (s2[i] != c && s2[i])
-	{
-		len++;
-		i++;
-	}
-	return (len);
-}
-
-static char	**ft_free(char const **tab, size_t j)
-{
-	size_t	i;
+	int	i;
 
 	i = 0;
-	while (i < j)
+	while (charset[i])
 	{
-		free((void *)tab[i]);
+		if (c == charset[i])
+			return (1);
 		i++;
 	}
-	free(tab);
 	return (0);
 }
 
-static char	**ft_filltab(char const *s, size_t rows, char c, char **tab)
+static int	ft_count_words(char *str, char *charset)
 {
-	size_t	t[3];
+	int	i;
+	int	j;
 
-	t[0] = 0;
-	t[1] = 0;
-	rows = ft_getrows(s, c);
-	while (s[t[0]] && t[1] < rows)
+	i = 0;
+	j = 0;
+	while (str[i])
 	{
-		t[2] = 0;
-		while (s[t[0]] == c)
-			t[0]++;
-		tab[t[1]] = (char *)malloc(sizeof(char) * ft_wordlen(s, c, t[0]) + 1);
-		if (tab[t[1]] == NULL)
-			return (ft_free((char const **)tab, rows));
-		while (s[t[0]] && s[t[0]] != c)
-		{
-			tab[t[1]][t[2]] = s[t[0]];
-			t[2]++;
-			t[0]++;
-		}
-		tab[t[1]][t[2]] = '\0';
-		t[1]++;
+		while (str[i] && ft_is_from_charset(str[i], charset))
+			i++;
+		while (str[i] && !ft_is_from_charset(str[i], charset))
+			i++;
+		if (i && !ft_is_from_charset(str[i - 1], charset))
+			j++;
 	}
-	tab[t[1]] = 0;
-	return (tab);
+	return (j);
 }
 
-char	**ft_split(char const *s, char c)
+static char	*ft_strcut(char *str, char *charset)
 {
-	char	**tab;
-	size_t	rows;
+	int		i;
+	char	*new_str;
 
-	if (!s)
-		return (0);
-	rows = ft_getrows(s, c);
-	tab = (char **)malloc(sizeof(char *) * (rows + 1));
-	if (tab == NULL)
+	i = 0;
+	while (str[i] && !ft_is_from_charset(str[i], charset))
+		i++;
+	new_str = malloc(sizeof(new_str) * (i + 1));
+	if (new_str == NULL)
 		return (NULL);
-	return (ft_filltab(s, rows, c, tab));
+	i = 0;
+	while (str[i] && !ft_is_from_charset(str[i], charset))
+	{
+		new_str[i] = str[i];
+		i++;
+	}
+	new_str[i] = '\0';
+	return (new_str);
+}
+
+char	**ft_split(char *str, char *charset)
+{
+	char	**strs;
+	int		i[3];
+
+	i[0] = 0;
+	i[1] = 0;
+	i[2] = ft_count_words(str, charset);
+	strs = malloc(sizeof(strs) * (i[2] + 1));
+	if (strs == NULL)
+		return (0);
+	while (str[i[0]])
+	{
+		while (str[i[0]] && ft_is_from_charset(str[i[0]], charset))
+			i[0]++;
+		if (i[1] < i[2])
+		{
+			strs[i[1]] = ft_strcut(&str[i[0]], charset);
+			if (strs[i[1]] == NULL)
+				return (ft_free_split(strs));
+			i[1]++;
+		}
+		while (str[i[0]] && !ft_is_from_charset(str[i[0]], charset))
+			i[0]++;
+	}
+	strs[i[1]] = 0;
+	return (strs);
 }
