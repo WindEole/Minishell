@@ -12,66 +12,62 @@
 
 #include "minishell.h"
 
-int	ft_check_exp(char **ev, char *buf)
+t_env	*ft_check_exp(t_adm *adm, char *buf)
 {
-	char	evc[BUF_S];
-	int		i;
-	int		y;
+	t_env	*ev;
 
-	i = -1;
-	while (ev[++i])
+	ev = adm->envh;
+	while (ev != NULL)
 	{
-		y = -1;
-		ft_bzero(evc, BUF_S);
-		while (ev[i][++y] != '=')
-			evc[y] = ev[i][y];
-		if (ft_strncmp(buf, evc, ft_strlen(evc)) == 0)
-			return (i);
+		if (!ft_strcmp(buf, ev->var))
+			return (ev);
+		ev = ev->next;
 	}
-	return (-1);
+	return (NULL);
 }
 
-char	*ft_take_exp(t_adm *adm, char *str, int *d)
+char	*ft_take_exp(t_adm *adm, char *str, int *y, int *i)
 {
 	char	buf[BUF_S];
 	char	*ret;
 	int		x;
-	int		i;
 
-	i = 0;
+	x = 0;
 	ft_bzero(buf, BUF_S);
-	while ((str[i] >= 65 && str[i] <= 90) || (str[i] >= 97 && str[i] <= 122)
-		|| (str[i] >= 48 && str[i] <= 57) || str[i] == 95)
+	while (str[x] && ((str[x] >= 65 && str[x] <= 90)
+			|| (str[x] >= 97 && str[x] <= 122)
+			|| (str[x] >= 48 && str[x] <= 57) || str[x] == 95 || str[x] == 63))
 	{
-		buf[i] = str[i];
-		i++;
+		buf[x] = str[x];
+		x++;
 	}
-	*d += i;
-	x = ft_check_exp(adm->ev, buf);
-	if (x == -1)
+	*y += x;
+	if (!ft_check_exp(adm, buf))
 	{
+		*i -= 1;
 		ret = malloc(sizeof(char) * 1);
 		ret[0] = '\0';
 		return (ret);
 	}
-	ret = ft_strdup(&adm->ev[x][i + 1]);
+	ret = ft_strdup(ft_check_exp(adm, buf)->val);
+	*i += ft_strlen(ret) - 1;
 	return (ret);
 }
-
-/* c nôté */
 
 int	ft_cut_exp(char **new, t_adm *adm, t_elm *elm, int *i)
 {
 	char	*tmp;
+	int		y[1];
 
+	y[0] = i[0];
 	tmp = elm->str;
-	new[0] = ft_strndup(elm->str, *i);
+	new[0] = ft_strndup(elm->str, *y);
 	if (new[0] == NULL)
 		return (1);
-	new[1] = ft_take_exp(adm, &elm->str[++*i], i);
+	new[1] = ft_take_exp(adm, &elm->str[*y + 1], y, i);
 	if (new[1] == NULL)
 		return (1);
-	new[2] = ft_strdup(&elm->str[*i]);
+	new[2] = ft_strdup(&elm->str[++*y]);
 	if (new[2] == NULL)
 		return (1);
 	elm->str = ft_strjoin(3, new, "");
@@ -103,7 +99,6 @@ int	ft_parse_exp(t_adm *adm, t_elm *elm)
 
 int	ft_expand(t_adm *adm, t_elm *elm)
 {
-	adm->p = adm->p;
 	while (elm != NULL)
 	{
 		if (elm->t == '\0' || elm->t == '\"')

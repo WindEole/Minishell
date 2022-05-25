@@ -12,37 +12,83 @@
 
 #include "minishell.h"
 
-void	handle_sigint(int sig)
+void	ft_pointer_elm(t_elm *elm, t_adm *adm)
 {
-	printf("Reception de SIGINT (CTRL C) [%d] => nv prompt\n", sig);
-	ft_putstr_fd("", 1);
-	rl_on_new_line();
-	rl_replace_line("", 0);
-	rl_redisplay();
+	if (!adm->head)
+	{
+		adm->head = elm;
+		adm->tail = elm;
+		elm->next = NULL;
+		elm->prev = NULL;
+	}
+	else
+	{
+		elm->prev = adm->tail;
+		adm->tail->next = elm;
+		elm->next = NULL;
+		adm->tail = elm;
+	}
+}
+
+void	is_file(t_elm *elm)
+{
+	int	fd;
+
+	if (access(elm->str, F_OK))
+		return ;
+	fd = open(elm->str, O_DIRECTORY);
+	if (fd == -1)
+		elm->t = 'f';
+	else
+		elm->t = 'd';
+	if (fd > 0)
+		close(fd);
+	return ;
+}
+
+void	*ft_set_shlvl(t_adm *adm)
+{
+	t_env	*ev;
+	char	*tmp[2];
+	int		shlv;
+
+	ev = adm->envh;
+	tmp[0] = NULL;
+	while (ev != NULL)
+	{
+		if (!ft_strcmp(ev->var, "SHLVL"))
+			tmp[0] = ft_strdup(ev->val);
+		ev = ev->next;
+	}
+	if (!tmp[0])
+		tmp[0] = ft_strdup("0\0");
+	shlv = ft_atoi(tmp[0]) + 1;
+	free(tmp[0]);
+	tmp[0] = ft_itoa(shlv);
+	tmp[1] = ft_strjoin_lib("SHLVL=", tmp[0]);
+	ft_export(tmp[1], adm);
+	return (free(tmp[0]), free(tmp[1]), NULL);
 }
 
 int	ft_get_path(t_adm *adm)
 {
-	char	**ev;
-	int		i;
+	t_env	*ev;
 
+	ev = adm->envh;
+	if (adm->pth)
+		ft_free_split(adm->pth);
 	adm->pth = NULL;
-	ev = adm->ev;
-	i = 0;
-	while (ev[++i])
-		if (ev[i][0] == 'P' && ev[i][1] == 'A' && ev[i][2] == 'T'
-			&& ev[i][3] == 'H' && ev[i][4] == '=')
-			adm->pth = ft_split_add(&ev[i][5], ":");
+	while (ev != NULL)
+	{
+		if (!ft_strncmp(ev->var, "PATH", 4))
+		{
+			adm->pth = ft_split_add(ev->val, ":");
+			break ;
+		}
+		ev = ev->next;
+	}
 	if (errno != 0 && adm->pth == NULL)
 		return (1);
-// A SUPR
-	i = -1;
-	while (adm->pth[++i])
-		if (adm->pth[i][0] == '/' && adm->pth[i][1] == 'm'
-			&& adm->pth[i][2] == 'n' && adm->pth[i][3] == 't'
-			&& adm->pth[i][4] == '/')
-			adm->pth[i][0] = '\0';
-// A SUPR
 	return (0);
 }
 

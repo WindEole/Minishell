@@ -12,6 +12,27 @@
 
 #include "minishell.h"
 
+int	is_command_here(t_elm *elm)
+{
+	int		fd;
+
+	elm->exe = ft_strjoin_lib(NULL, elm->str);
+	if (elm->exe == NULL)
+		return (ft_perror("is_command", -1));
+	fd = open(elm->exe, O_DIRECTORY);
+	if (!access(elm->exe, F_OK) && !access(elm->exe, X_OK) && fd == -1)
+	{
+		if (ft_strstr(elm->str, "./minishell"))
+			g_sig = 2;
+		return (1);
+	}
+	if (fd > 0)
+		close(fd);
+	free(elm->exe);
+	elm->exe = NULL;
+	return (0);
+}
+
 int	is_command(t_adm *adm, t_elm *elm)
 {
 	int	fd;
@@ -31,6 +52,11 @@ int	is_command(t_adm *adm, t_elm *elm)
 		free(elm->exe);
 		elm->exe = NULL;
 	}
+	i = is_command_here(elm);
+	if (i == -1)
+		return (ft_perror("is_command_here", -1));
+	else if (i == 1)
+		return (1);
 	return (0);
 }
 
@@ -39,39 +65,36 @@ int	is_builtins(t_elm *elm, char **buil)
 	int	i;
 
 	i = -1;
-	elm->exe = NULL;
 	while (buil[++i])
 		if (!ft_strcmp(elm->str, buil[i]))
 			return (1);
 	return (0);
 }
 
-void	is_file(t_elm *elm)
+void	ft_def_type_bis(t_adm *adm, t_elm *elm)
 {
-	int	fd;
-
-	if (access(elm->str, F_OK))
-		return ;
-	fd = open(elm->str, O_DIRECTORY);
-	if (fd == -1)
-		elm->t = 'f';
-	else
-		elm->t = 'd';
-	if (fd > 0)
-		close(fd);
-	return ;
+	if (elm->t == '\0' && is_builtins(elm, adm->buil))
+		elm->t = 'b';
+	if (elm->prev && (ft_strchr(elm->prev->t, "cbo")) && elm->str[0] == '-')
+		elm->t = 'o';
+	if (elm->prev && elm->prev->t == 'h')
+		elm->t = 'w';
+	if (elm->t != 'b' && elm->t != 'c' && elm->t != 'o')
+		is_file(elm);
 }
 
 int	ft_define_type(t_adm *adm, t_elm *elm)
 {
 	int		x;
 
+	x = 0;
 	while (elm != NULL)
 	{
+		elm->exe = NULL;
 		x = 0;
-		if (is_builtins(elm, adm->buil))
-			elm->t = 'b';
-		if (adm->pth && elm->t != 'b')
+		if (elm->prev && elm->prev->t == '>' && elm->t == '\0')
+			elm->t = 'f';
+		if (elm->t == '\0' && adm->pth && elm->t != 'b')
 		{
 			x = is_command(adm, elm);
 			if (x == -1)
@@ -79,12 +102,7 @@ int	ft_define_type(t_adm *adm, t_elm *elm)
 			if (x == 1)
 				elm->t = 'c';
 		}
-		if (elm->prev && (ft_strchr(elm->prev->t, "cbo")) && elm->str[0] == '-')
-			elm->t = 'o';
-		if (elm->prev && elm->prev->t == 'h')
-			elm->t = 'w';
-		if (elm->t != 'b' && elm->t != 'c' && elm->t != 'o')
-			is_file(elm);
+		ft_def_type_bis(adm, elm);
 		elm = elm->next;
 	}
 	if (x == -1)

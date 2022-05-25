@@ -12,107 +12,93 @@
 
 #include "minishell.h"
 
-////    ATTENTION : c'est du pseudo-code ! A modifier !    ////
-
-int	ft_echo(char *s) // A lancer quand la commande est echo !
+int	ft_echo(t_pip *pip)
 {
-	int	i;
-
-	i = -1;
-	while (s[++i] != '\0')
-	{
-		if (write(1, &s[i], 1) == -1)
-		{
-			perror("echo");
-			return (-1);
-		}
-	}
-//	if (!option -n)
-		write(1, "\n", 1);
+	write(pip->fd_out, pip->param, ft_strlen(pip->param));
+	if (!(pip->exec[1] && !ft_strcmp(pip->exec[1], "-n")))
+		write(pip->fd_out, "\n", 1);
 	return (0);
 }
 
-//void	ft_cd(char *dirname, t_pip *p)
-void	ft_cd(t_adm *adm, t_elm *elm)
+int	ft_cd(t_adm *adm, t_pip *pip)
+{
+	char	*tmp[2];
+
+	tmp[0] = NULL;
+	tmp[0] = getcwd(NULL, 256);
+	if (tmp[0] == NULL)
+		return (-1);
+	tmp[1] = ft_strjoin_lib("OLDPWD=", tmp[0]);
+	ft_export(tmp[1], adm);
+	free(tmp[1]);
+	free(tmp[0]);
+	if (!pip->param)
+	{
+		errno = 2;
+		return (-1);
+	}
+	if (chdir(pip->param) != 0)
+		return (-1);
+	tmp[0] = NULL;
+	tmp[0] = getcwd(NULL, 256);
+	if (tmp[0] == NULL)
+		return (-1);
+	tmp[1] = ft_strjoin_lib("PWD=", tmp[0]);
+	ft_export(tmp[1], adm);
+	free(tmp[1]);
+	return (ft_return_free(tmp[0], 0));
+}
+
+int	ft_pwd(void)
 {
 	char	*pathname;
-	char	*buf;
-	size_t	size;
 
 	pathname = NULL;
-	buf = NULL;
-	size = 256;
-	if (chdir(elm->str) != 0)
-	{
-		perror("cd");
-		return ;
-	}
-	pathname = getcwd(buf, size);
+	pathname = getcwd(NULL, 256);
 	if (pathname == NULL)
-	{
-		perror("pwd");
-		return ;
-	}
-	ft_unset("PWD", adm);
-	ft_export(ft_strjoin_lib("PWD=", pathname), adm);
-	return ;
+		return (ft_return_free(pathname, -1));
+	if (write(1, pathname, ft_strlen(pathname)) == -1)
+		return (ft_return_free(pathname, -1));
+	write(1, "\n", 1);
+	return (ft_return_free(pathname, 0));
 }
 
-void	ft_pwd(void)
+int	ft_unset(char *s, t_adm *adm)
 {
-	char	*pathname;
-	char	*buf;
-	size_t	size;
+	t_env	*ev;
+	int		i;
+	char	**vars;
 
-	pathname = NULL;
-	buf = NULL;
-	size = 256;
-	pathname = getcwd(buf, size);
-	if (pathname == NULL)
-		perror("pwd");
-	else
-	{
-		ft_putstr_fd(pathname, 1);
-		write(1, "\n", 1);
-	}
-}
-
-void	ft_export(char *s, t_adm *adm)
-{
-	char	*tab_ev;
-	int		s_ev;
-
-	s_ev = 0;
-	while (adm->ev[s_ev])
-		s_ev++;
-	tab_ev = ft_strjoin_n(s_ev, adm->ev);
-	free(adm->ev);
-	tab_ev = ft_strjoin_lib(tab_ev, "\n");
-	tab_ev = ft_strjoin_lib(tab_ev, s);
-	adm->ev = ft_split_lib(tab_ev, '\n');
-	free(tab_ev);
-}
-
-void	ft_unset(char *s, t_adm *adm)
-{
-	int	i;
-
-	i = 0;
-	while (adm->ev[i])
-	{
-printf(YELLOW"ev[%d] = [%s]"RESET"\n", i, adm->ev[i]);
-		if (strncmp(s, adm->ev[i], ft_strlen(s)) == 0)
-			adm->ev[i] = NULL;
-printf(PURPLE"ev[%d] = [%s]"RESET"\n", i, adm->ev[i]);
-		i++;
-	}
-}
-
-void	ft_env(t_adm *adm)
-{
-	int	i;
-
+	vars = ft_split_lib(s, ' ');
+	if (vars == NULL)
+		return (-1);
 	i = -1;
-	while (adm->ev[++i])
-		ft_putstr_fd(adm->ev[i], 1);
+	while (vars && vars[++i])
+	{
+		ev = adm->envh;
+		while (ev != NULL)
+		{
+			if (!ft_strcmp(vars[i], ev->var))
+			{
+				ft_supr_ev(adm, ev);
+				break ;
+			}
+			ev = ev->next;
+		}
+	}
+	return (ft_free_split(vars), 0);
+}
+
+int	ft_env(t_adm *adm, t_pip *pip)
+{
+	t_env	*ev;
+
+	ev = adm->envh;
+	while (ev != NULL)
+	{
+		write(pip->fd_out, ev->line, ft_strlen(ev->line));
+		write(pip->fd_out, "\n", 1);
+		ev = ev->next;
+	}
+	return (0);
 }

@@ -67,6 +67,7 @@ char	*ft_strchr(char c, char *set);
 char	*ft_strdup(char *src);
 char	*ft_strndup(char *src, int n);
 char	*ft_strdup_cut(char *str, char c);
+char	*ft_strstr(char *str, char *to_find);
 
 /*
  * === get_next_line === *
@@ -83,11 +84,24 @@ typedef struct s_gnl
 }	t_gnl;
 
 char	*gnl(int fd);
+int		ft_strche(char *s, char c, int x);
 
 /*
  * === ft_bzero === *
  */
 
 void	ft_bzero(char *str, int x);
+
+/*
+ * === ft_itoa === *
+ */
+
+char	*ft_itoa(int n);
+
+/*
+ * === ft_atoi === *
+ */
+
+int		ft_atoi(const char *str);
 
 #endif

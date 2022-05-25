@@ -21,25 +21,31 @@ RM			=	/usr/bin/rm -rf
 
 LIB			=	-L./Libft -lft -L./local/lib -lreadline
 
-vpath %.c srcs #va chercher les fichiers .c dans ts les dossiers repertories
+vpath %.c srcs
 
 SRC			=	srcs/main.c \
+				srcs/env.c \
 				srcs/parse.c \
 				srcs/list.c \
-				srcs/jobs.c \
-				srcs/redir.c \
+				srcs/signal.c \
+				srcs/jobs_init.c \
+				srcs/jobs_param.c \
+				srcs/jobs_redir.c \
 				srcs/define.c \
 				srcs/expand.c \
 				srcs/prog.c \
+				srcs/prog_bis.c \
 				srcs/builtin.c \
+				srcs/buil_export.c \
 				srcs/utils.c \
+				srcs/freelist.c \
 				srcs/free.c \
 
 OBJ			=	$(SRC:srcs/%.c=objects/%.o)
 
-all			:	$(NAME)
+all			:	libft obj $(NAME)
 
-$(NAME)		:	libft obj $(OBJ)
+$(NAME)		:	$(OBJ)
 				$(CC) $(CFLAGS) -o $(NAME) $(SRC) $(LIB)
 
 libft		:
@@ -55,6 +61,9 @@ n			:
 				norminette $(SRC)
 				norminette $(INC)
 				$(MAKE) -C Libft n
+
+secu		:	
+				nm -u $(NAME)
 
 clean		:
 				$(RM) $(OBJ)

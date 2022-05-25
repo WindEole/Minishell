@@ -28,7 +28,10 @@ SRC		=	ft_putchar_fd.c \
 			ft_strdup.c \
 			ft_strndup.c \
 			ft_strdup_cut.c \
+			ft_strstr.c \
 			ft_bzero.c \
+			ft_atoi.c \
+			ft_itoa.c \
 			gnl.c \
 
 OBJ		=	$(SRC:.c=.o)

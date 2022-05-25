@@ -12,21 +12,15 @@
 
 #include "minishell.h"
 
-int	ft_recup_env(char **env, t_adm *adm)
-{
-	int		i;
-	char	*tmp;
+int	g_sig;
 
-	i = 0;
-	while (env[i])
-		i++;
-	tmp = ft_strjoin_n(i, env);
-	if (tmp == NULL)
-		return (1);
-	adm->ev = ft_split_lib(tmp, '\n');
-	free(tmp);
-	if (adm->ev == NULL)
-		return (1);
+int	ft_exit_isa(t_adm *adm)
+{
+	if (ft_strncmp(adm->dat->arg, "exit", 4) == 0
+		&& ft_strlen(adm->dat->arg) > 4)
+		write(1, "exit\n", 5);
+	if (!adm->dat->arg)
+		write(1, "exit\n", 5);
 	return (0);
 }
 
@@ -40,25 +34,43 @@ void	ft_prompt(t_adm *adm)
 	{
 		adm->dat->arg = readline("minishell $> ");
 		add_history(adm->dat->arg);
-printf(GREEN"arg = [%s]"RESET"\n", adm->dat->arg);
-		if (!adm->dat->arg || ft_strcmp(adm->dat->arg, "exit") == 0)
-			adm->dat->x = 0;
+		if (ft_strncmp(adm->dat->arg, "exit", 4) == 0 || !adm->dat->arg)
+			adm->dat->x = ft_exit_isa(adm);
 		if (adm->dat->x)
+		{
+			r = ft_get_path(adm);
 			r = ft_parse(adm);
+		}
 		if (r)
-			ft_perror("ft_parse", 0);
+			ft_perror("ft_prompt", 0);
 		if (adm->dat->x && adm->dat->arg[0] && adm->piph)
 			ft_execute_prog(adm);
+		ft_free_pip(adm);
 		ft_free_list(adm);
 		free(adm->dat->arg);
 		errno = 0;
 	}
 }
 
+/*void	ft_read_env(t_adm *adm)
+{
+	t_env	*now;
+
+	now = adm->envh;
+	while (now != NULL)
+	{
+		printf(YELLOW"[%s]\n"GREEN"[%s] [%s]"RESET"\n", now->line, now->var, now->val);
+		free(now->var);
+		free(now->val);
+		now = now->next;
+		free(adm->envh);
+		adm->envh = now;
+	}
+}*/
+
 int	main(int ac, char **av, char **env)
 {
-	struct sigaction	sa;
-	t_adm				adm;
+	t_adm	adm;
 
 	av = NULL;
 	if (ac != 1)
@@ -66,20 +78,17 @@ int	main(int ac, char **av, char **env)
 		errno = 2;
 		return (ft_perror("minishell", 1));
 	}
-	sa.sa_handler = &handle_sigint;
-	sa.sa_flags = SA_RESTART;
-	sigaction(SIGINT, &sa, NULL);
+	ft_signal();
 	adm.head = NULL;
 	adm.tail = NULL;
 	adm.piph = NULL;
 	adm.pipt = NULL;
+	adm.pth = NULL;
 	adm.i = 0;
 	if (ft_recup_env(env, &adm))
 		return (ft_free(&adm, "ft_recup_env", 1));
-	if (ft_get_path(&adm))
-		return (ft_perror("ft_get_path", 1));
 	adm.dat = malloc(sizeof(*adm.dat));
-	adm.buil = ft_split(BUILTINS, " ");
+		adm.buil = ft_split(BUILTINS, " ");
 	if (adm.dat == NULL || adm.buil == NULL)
 		return (ft_free(&adm, "main adm.dat", 1));
 	ft_prompt(&adm);

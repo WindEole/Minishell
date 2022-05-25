@@ -12,32 +12,11 @@
 
 #include "minishell.h"
 
-void	ft_free_list(t_adm *adm)
+int	ft_return_free(char *s, int x)
 {
-	t_elm	*now;
-
-	now = adm->head;
-	while (now != NULL)
-	{
-		printf(YELLOW"[%s] | [%c]"RESET"\n", now->str, now->t);
-		now = now->next;
-		if (now == NULL)
-		{
-			free(adm->tail->str);
-			if (adm->tail->exe)
-				free(adm->tail->exe);
-			free(adm->tail);
-		}
-		else
-		{
-			free(now->prev->str);
-			if (now->prev->exe)
-				free(now->prev->exe);
-			free(now->prev);
-		}
-	}
-	adm->head = NULL;
-	adm->tail = NULL;
+	if (s)
+		free(s);
+	return (x);
 }
 
 int	expand_free(char **new, int x)
@@ -65,7 +44,10 @@ int	ft_free(t_adm *adm, char *str, int x)
 		adm->ev = ft_free_split(adm->ev);
 	if (adm->head)
 		ft_free_list(adm);
+	if (adm->envh)
+		ft_free_env(adm);
 	if (errno != 0 && str)
 		perror(str);
+	rl_clear_history();
 	return (x);
 }

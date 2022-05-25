@@ -1,0 +1,6 @@
+valgrind --suppressions=ignoreliberror --leak-check=full --show-leak-kinds=all --track-fds=yes --track-origins=yes --trace-children=yes ./minishell
+
+
+--> suppressions=ignoreliberror pour ignorer les leaks de readline (on ne doit pas les gerer...)
+
+--> track-fds=yes pour verifier si on n'a pas des fd ouverts a la fin du programme...
